@@ -1680,4 +1680,96 @@ Any summary submitted <strong>after the start of the new module will not be acce
 
 <h4>MSSM Module:</h4>
 <ul>
-<li>How to Write Copy That Sells by
+<li>How to Write Copy That Sells by Ray Edwards</li>
+<li>Start With Why by Simon Sinek</li>
+</ul>
+</div>
+</div>
+</div>
+
+</main>
+
+<script>
+// Navigation
+const navLinks=document.querySelectorAll('.nav-link[data-section]');
+const sections=document.querySelectorAll('.section');
+function showSection(id){
+  sections.forEach(s=>{s.classList.remove('active');s.style.display='none'});
+  navLinks.forEach(l=>l.classList.remove('active'));
+  const sec=document.getElementById('sec-'+id);
+  if(sec){sec.classList.add('active');sec.style.display='block';sec.scrollIntoView({behavior:'smooth',block:'start'})}
+  const link=document.querySelector(`.nav-link[data-section="${id}"]`);
+  if(link)link.classList.add('active');
+  if(window.innerWidth<768)toggleSidebar();
+}
+navLinks.forEach(l=>{
+  l.addEventListener('click',e=>{
+    e.preventDefault();
+    showSection(l.dataset.section);
+  });
+});
+// Show all sections by default (scrollable page mode)
+sections.forEach(s=>{s.style.display='block';s.classList.add('active')});
+
+// Dark mode
+function toggleDark(){
+  document.body.classList.toggle('dark');
+  const isDark=document.body.classList.contains('dark');
+  localStorage.setItem('dark',isDark);
+  document.getElementById('darkIcon').textContent=isDark?'☀️':'🌙';
+  document.getElementById('darkLabel').textContent=isDark?'Light':'Dark';
+}
+if(localStorage.getItem('dark')==='true'||(!localStorage.getItem('dark')&&matchMedia('(prefers-color-scheme:dark)').matches)){
+  document.body.classList.add('dark');
+  document.getElementById('darkIcon').textContent='☀️';
+  document.getElementById('darkLabel').textContent='Light';
+}
+
+// Sidebar toggle (mobile)
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('active');
+}
+
+// Collapsible sections
+document.querySelectorAll('.collapsible-header').forEach(h=>{
+  h.addEventListener('click',()=>{
+    const content=h.nextElementSibling;
+    const icon=h.querySelector('.collapse-icon');
+    if(content.style.maxHeight){
+      content.style.maxHeight=null;content.style.padding='0 1em';
+      if(icon)icon.textContent='▶';
+    }else{
+      content.style.maxHeight=content.scrollHeight+'px';content.style.padding='1em';
+      if(icon)icon.textContent='▼';
+    }
+  });
+});
+
+// Search with Fuse.js
+const searchInput=document.getElementById('searchInput');
+const searchResults=document.getElementById('searchResults');
+const searchItems=[];
+document.querySelectorAll('.section').forEach(sec=>{
+  const id=sec.id.replace('sec-','');
+  const title=sec.querySelector('h1,h2,.section-header h1')?.textContent||id;
+  const text=sec.textContent.substring(0,2000);
+  searchItems.push({id,title,text});
+});
+let fuse;
+if(typeof Fuse!=='undefined'){
+  fuse=new Fuse(searchItems,{keys:['title','text'],threshold:0.3,includeMatches:true});
+}
+searchInput?.addEventListener('input',e=>{
+  const q=e.target.value.trim();
+  if(!q||!fuse){searchResults.style.display='none';return}
+  const results=fuse.search(q).slice(0,8);
+  if(!results.length){searchResults.innerHTML='<div style="padding:12px;color:var(--text-secondary)">No results</div>';searchResults.style.display='block';return}
+  searchResults.innerHTML=results.map(r=>`<div class="search-result" onclick="showSection('${r.item.id}');searchResults.style.display='none';searchInput.value=''" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border)">${r.item.title}</div>`).join('');
+  searchResults.style.display='block';
+});
+document.addEventListener('click',e=>{if(!e.target.closest('.search-box'))searchResults.style.display='none'});
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();searchInput?.focus()}});
+</script>
+</body>
+</html>
